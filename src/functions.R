@@ -1,4 +1,4 @@
-train_model <- function(df, features, response, seed = 1987, scale_responses=F){
+train_model <- function(df, features, response, seed = 33, scale_responses=F){
   library(brms)
   #scale data so that the bayesinf model can use data centered in zero
   scaling_xs = scale(df[,colnames(df) %in% features])
@@ -32,7 +32,7 @@ train_model <- function(df, features, response, seed = 1987, scale_responses=F){
     ),
     # define data and grouping correlation structures
     data = train, family = student(),
-    #set_prior(horseshoe()),
+    set_prior(horseshoe()),
     #other parameters
     chains=2, cores =2, iter = 2000 
     #,backend = "cmdstanr", threads = threading(1)
@@ -43,7 +43,7 @@ train_model <- function(df, features, response, seed = 1987, scale_responses=F){
   #calculate the bayesian R2 for the model on the test set
   bR2_fit = bayes_R2(fit, newdata=test)
   #perform cross validation, predict and calculate rmse on the original scale of y
-  kcv <- kfold(fit, K = 3, seed=seed, save_fits = TRUE)
+  #kcv <- kfold(fit, K = 3, seed=seed, save_fits = TRUE)
   predicts <- predict(fit,  newdata = test)
   y = test %>% select(response)
   if(scale_responses == T){
@@ -72,11 +72,15 @@ generate_augmented_matrix <- function(path_responses, path_predictors){
   library(data.table)
   library(tidyverse)
   # want to generate on the go the dataset to feed the models into
-  X = fread(path_predictors)
+  X = fread(path_predictors, header=T)
   colnames(X)
+  
   #get the average predictors in plot
   X = X %>% group_by(PlotCode, Site) %>% summarize_if(is.numeric, mean)
   X = X %>% select(-one_of(c("Site", "Year")))
+  if(path_predictors %like% "reflectance"){
+    colnames(X)[-1]=paste("nm", colnames(X)[-1], sep="_")
+  }
   indexes = sapply(1:ncol(X), function(x) is.numeric(data.frame(X)[,x]))
   indexes = colnames(X)[indexes]
   # read responses

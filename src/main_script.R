@@ -8,7 +8,7 @@ predictors = list.files(path_predictors)
 predictors = predictors[!predictors %like% "ecosystem_fluxes"]
 path_responses = "/Volumes/Data/Data_for_Sergio/ecosystem_fluxes.csv"
 br2_overview=list()
-for(prdct in predictors){
+for(prdct in predictors[6:17]){
   df = generate_augmented_matrix(path_predictors=paste(path_predictors, prdct,sep=""),
                                  path_responses=path_responses)
   
