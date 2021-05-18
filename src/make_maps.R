@@ -2,8 +2,9 @@
 #load maps and turn them into KL 
 library(sf)
 library(rgeos)
+library(brms)
 # 
-# kld_grps = read_csv("../NeonSpeciesClassification/data/kld_grps_2103_0308.csv", col_names = F)
+# 
 # cbt = raster::brick("/Users/sergiomarconi/Downloads/drive-download-20210428T221522Z-001/NEON_CBT.tif")
 # pbm = raster::brick("/Users/sergiomarconi/Downloads/drive-download-20210428T221522Z-001/NEON_PBM.tif")
 # pf_en = raster::brick("/Users/sergiomarconi/Downloads/drive-download-20210428T221522Z-001/NEON_Pfeiler_Enquist.tif")
@@ -12,10 +13,14 @@ library(rgeos)
 # road = raster::brick("/Users/sergiomarconi/Downloads/drive-download-20210428T221522Z-001/NEON_Road.tif")
 # upperMT = raster::brick("/Users/sergiomarconi/Downloads/drive-download-20210428T221522Z-001/NEON_upperMT.tif")
 
-
+#/kld_grps_2103_0308.csv
 site = "CBT"
+fl = "NEE"
+list_sites = c("CBT", "PBM", "Pfeiler_Enquist", "PfeilerDOE", "Pump", "Road", "upperMT")
 path_to_tiff = "/Users/sergiomarconi/Downloads/drive-download-20210428T221522Z-001/"
 path_to_models = "./out/NEON_for_maps_reflectance_NEON.csv.rds"
+kld_grps = read_csv("./dim_reduction/kld_grps.csv", col_names = F)
+ecosystem_fluxes = c("NEE","GPP","Reco","Rsoil","SOC","ET","WUE")
 for(site in list_sites){
   
   rbrick = raster::brick(paste(path_to_tiff, "NEON_",site , ".tif", sep=""))
@@ -63,12 +68,13 @@ for(site in list_sites){
                      scale = attr(feat_scale$features, "scaled:scale"))
     
     predictions = predict(fit_tmp, newdata = kl_brick)
-    
+    predictions = predictions#[,1]
     # create raster stack with predictions
-    dim(predictions) = c(dim(cbt)[1], dim(cbt)[2], 4)
+    #dim(predictions) = c(dim(rbrick)[1], dim(rbrick)[2])
     rast = rbrick
     raster::values(rast) = predictions
     names(rast) = c("Estimate", "SE", "Q2_5", "Q97_5")
+    plot(rast)
     raster::writeRaster(rast, paste("./out/maps/", fl, "_", site,".tiff", sep=""), writeFormats = "GTiff", overwrite=T)
   }
 }

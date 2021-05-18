@@ -9,7 +9,7 @@ train_model <- function(df, features, response, seed = 33, scale_responses=F){
   #   df[,colnames(df) %in% response] = scaling_ys
   # }
   set.seed(seed)
-  train = df %>% ungroup %>% group_by(Site) %>% sample_frac(0.8)
+  train = df %>% ungroup %>% group_by(Site) %>% sample_frac(0.7)
   test = df %>% filter(!(PlotCode %in% train$PlotCode))
   if(length(response) > 1){
     #train model using bayesian lasso (horseshoe priors) to identify which indexes and bands can be reduced
@@ -53,7 +53,7 @@ train_model <- function(df, features, response, seed = 33, scale_responses=F){
     }
   }
   #calculate the waic of the model
-  loo_fit = loo(fit)
+  #loo_fit = loo(fit)
   #calculate the bayesian R2 for the model on the test set
   bR2_fit = bayes_R2(fit, newdata=test)
   #perform cross validation, predict and calculate rmse on the original scale of y
@@ -75,7 +75,7 @@ train_model <- function(df, features, response, seed = 33, scale_responses=F){
   rmse_ft = rmse(y[[response]] , (predicts[["Estimate"]]))
   #rmse(y, colMeans(predicts))
   #return a list with model, metrics, and scaling factors
-  return(list(model = fit, bR2 = bR2_fit, LOO = loo_fit, RMSE = rmse_ft, 
+  return(list(model = fit, bR2 = bR2_fit, #LOO = loo_fit, RMSE = rmse_ft, 
               y_hat_test = predicts, y_test = y,
               scaling = list(features = scaling_xs)))
   

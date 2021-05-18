@@ -36,7 +36,7 @@ for(prdct in predictors[-1]){
       #for anything else than spectral diversity add all features that are in the file and apply to the specific model
     }else{
       features = features[!features %like% "sd"]
-      features = prdct
+      #features = prdct
       #individual models
       dataset = df$dataset
       all_models = list()
@@ -48,7 +48,7 @@ for(prdct in predictors[-1]){
         br2_[[fl]] = (all_models[[fl]]$bR2)
       }
       br2_overview[[prdct]] = do.call(rbind.data.frame, br2_)
-      saveRDS(all_models,paste("./out/loo_mixed_eff", substr(prdct, 1, nchar(prdct)), ".rds", sep=""))
+      saveRDS(all_models,paste("./out/NEON_for_maps_", substr(prdct, 1, nchar(prdct)), ".rds", sep=""))
     }
   }
   
